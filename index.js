@@ -25,6 +25,8 @@ function AdvancedHttpTemperatureHumidity(log, config) {
     this.serial = config["serial"] || "18981898";
 
     this.disableHumidity = config["humidity"] || false;
+    
+    this.disableAirquality = config["airquality"] || false;
 }
 
 AdvancedHttpTemperatureHumidity.prototype = {
@@ -49,6 +51,10 @@ AdvancedHttpTemperatureHumidity.prototype = {
     getStateHumidity: function (callback) {
         callback(null, this.humidity);
     },
+    
+    getStateAirquality: function (callback) {
+        callback(null, this.airquality);
+    },
 
     getState: function (callback) {
         this.httpRequest(this.url, "", "GET", this.username, this.password, this.sendimmediately, function (error, response, responseBody) {
@@ -67,6 +73,13 @@ AdvancedHttpTemperatureHumidity.prototype = {
 
                     this.humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, humidity);
                     this.humidity = humidity;
+                }
+                
+                if (this.airQualityService !== false) {
+                   var airQuality = parseFloat(info.airquality)
+                   
+                   this.airQualityService.setCharacteristic(Characteristic.AirQuality, airQuality);
+                   this.airQuality = airQuality;
                 }
 
                 callback(null, temperature);
@@ -102,6 +115,14 @@ AdvancedHttpTemperatureHumidity.prototype = {
                 .setProps({minValue: 0, maxValue: 100})
                 .on('get', this.getStateHumidity.bind(this));
             services.push(this.humidityService);
+        }
+        
+        if (this.disableAirquality !== true) {
+            this.airQualityService = new Service.AirQualitySensor(this.name);
+            this.airQualityService
+                .getCharacteristic(Characteristic.AirQuality)
+                .on('get', this.getStateAirquality.bind(this));
+            service.push(this.airQualityService);
         }
 
         return services;
