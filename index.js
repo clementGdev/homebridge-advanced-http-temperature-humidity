@@ -53,7 +53,7 @@ AdvancedHttpTemperatureHumidity.prototype = {
     },
     
     getStateAirquality: function (callback) {
-        callback(null, this.airquality);
+        callback(null, this.airQuality);
     },
 
     getState: function (callback) {
